@@ -1,7 +1,13 @@
 package edu.cmn.deepdive.animals;
 
+import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import edu.cmn.deepdive.animals.model.Animal;
+import edu.cmn.deepdive.animals.service.WebServiceProxy;
+import java.io.IOException;
+import java.util.List;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -9,5 +15,26 @@ public class MainActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+    new Retriever().start();
+  }
+
+  private class Retriever extends Thread {
+
+    @Override
+    public void run() {
+      Response<List<Animal>> response = null;
+      try {
+        response = WebServiceProxy.getInstance()
+            .getAnimals()
+            .execute();
+        if (response.isSuccessful()) {
+          Log.d(getClass().getName(), response.body().toString());
+        } else {
+          Log.e(getClass().getName(), response.message());
+        }
+      } catch (IOException e) {
+        Log.e(getClass().getName(), e.getMessage(), e);
+      }
+    }
   }
 }
